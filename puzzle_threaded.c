@@ -14,9 +14,10 @@
 int nRow,nCol,thread_count;
 char **grid;
 char * word;
+static short found=0;
 
-void searchx(char **grid,int nRow,int nCol,int offset);
-void searchy(char **grid,int nRow,int nCol,int offset);
+void searchx(char **grid,int nRow,int nCol,int offsetx,int offsety);
+void searchy(char **grid,int nRow,int nCol,int offsetx,int offsety);
 void *split(void *rank);
 
 
@@ -57,6 +58,9 @@ void main(){
  
   for(tid=0;tid<thread_count;tid++)
     pthread_join(thread[tid],NULL);
+  if(!found){
+    printf("No such word\n");
+  }
   end = time(NULL);
 
   
@@ -64,12 +68,12 @@ void main(){
   printf("Elapsed time = %ld seconds\n", end - start);
 }
 
-void searchx(char **grid,int row,int col,int offset){
+void searchx(char **grid,int row,int col,int offsetx,int offsety){
   int i,x,y,l;
-  short found=0;
+
   for(i=0;word[i+1]!='\0';i++);//find final letter
-  for(y=0;y<row&&!found;y++){
-    for(x=offset;x<offset+col&&!found;x++){
+  for(y=offsety;y<offsety+row&&!found;y++){
+    for(x=offsetx;x<offsetx+col&&!found;x++){
       if(grid[y][x]==word[0]){
 	//check right then downleft then down then downright
 	if(nCol-x>=i&&grid[y][x+1]==word[1]){ //check right
@@ -78,7 +82,7 @@ void searchx(char **grid,int row,int col,int offset){
 	      break;
 	    }
 	  }
-	  if(grid[y][x+l-1]==word[i]){
+	  if(grid[y][x+l-1]==word[i]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+1,x+1);
 	    found=1;
 	  }
@@ -91,7 +95,7 @@ void searchx(char **grid,int row,int col,int offset){
 		}
 	      }
 	  }
-	  if(grid[y+l-1][x-l+1]==word[i]){
+	  if(grid[y+l-1][x-l+1]==word[i]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+1,x+1);
 	    found=1;
 	  }
@@ -101,7 +105,7 @@ void searchx(char **grid,int row,int col,int offset){
 	      break;
 	    }
 	  }
-	  if(grid[y+l-1][x]==word[i]){
+	  if(grid[y+l-1][x]==word[i]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+1,x+1);
 	    found=1;
 	  }	  
@@ -113,7 +117,7 @@ void searchx(char **grid,int row,int col,int offset){
 		}
 	      }
 	  }
-	  if(grid[y+l-1][x+l-1]==word[i]){
+	  if(grid[y+l-1][x+l-1]==word[i]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+1,x+1);
 	    found=1;
 	  }
@@ -122,12 +126,12 @@ void searchx(char **grid,int row,int col,int offset){
     }
   }
 }
-void searchy(char **grid,int row,int col,int offset){
+void searchy(char **grid,int row,int col,int offsetx,int offsety){
   int i,x,y,l;
-  short found=0;
+
   for(i=0;word[i+1]!='\0';i++);//find final letter
-  for(y=0;y<row&&!found;y++){
-    for(x=offset;x<offset+col&&!found;x++){
+  for(y=offsety;y<offsety+row&&!found;y++){
+    for(x=offsetx;x<offsetx+col&&!found;x++){
       if(grid[y][x]==word[i]){
 	if(nCol-x>=i&&grid[y][x+1]==word[i-1]){ //check right
 	  for(l=2;l<=i;l++){
@@ -135,7 +139,7 @@ void searchy(char **grid,int row,int col,int offset){
 	      break;
 	    }
 	  }
-	  if(grid[y][x+l-1]==word[0]){
+	  if(grid[y][x+l-1]==word[0]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+1,x+l);
 	    found=1;
 	  }
@@ -148,7 +152,7 @@ void searchy(char **grid,int row,int col,int offset){
 		}
 	      }
 	  }
-	  if(grid[y+l-1][x-l+1]==word[0]){
+	  if(grid[y+l-1][x-l+1]==word[0]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+l,x-l+1);
 	    found=1;
 	  }
@@ -158,7 +162,7 @@ void searchy(char **grid,int row,int col,int offset){
 	      break;
 	    }
 	  }
-	  if(grid[y+l-1][x]==word[0]){
+	  if(grid[y+l-1][x]==word[0]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+l,x+1);
 	    found=1;
 	  }	  
@@ -170,7 +174,7 @@ void searchy(char **grid,int row,int col,int offset){
 		}
 	      }
 	  }
-	  if(grid[y+l-1][x+l-1]==word[0]){
+	  if(grid[y+l-1][x+l-1]==word[0]&&l>=i){
 	    printf("Row: %d Column: %d\n",y+l,x+l);
 	    found=1;
 	  }
@@ -188,36 +192,36 @@ void *split(void*rank){
   switch(tid)
     {
     case 0:
-      printf("got %ld\n",tid);
-      searchx(grid,nQRow,nQCol,0);
+      // printf("got %ld\n",tid);
+      searchx(grid,nQRow,nQCol,0,0);
       break;
     case 1:
-      printf("got %ld\n",tid);
-      searchx(&grid[nQRow],nQRow,nQCol,0);
+      // printf("got %ld\n",tid);
+      searchx(grid,nQRow,nQCol,0,nQRow);
       break;
     case 2:
-      printf("got %ld\n",tid);
-      searchx(grid,nQRow,nQCol,nQCol);
+      // printf("got %ld\n",tid);
+      searchx(grid,nQRow,nQCol,nQCol,0);
       break;
     case 3:
-      printf("got %ld\n",tid);
-      searchx(&grid[nQRow],nQRow,nQCol,nQCol);
+      // printf("got %ld\n",tid);
+      searchx(grid,nQRow,nQCol,nQCol,nQRow);
       break;
     case 4:
-      printf("got %ld\n",tid);
-      searchy(grid,nQRow,nQCol,0);
+      // printf("got %ld\n",tid);
+      searchy(grid,nQRow,nQCol,0,0);
       break;
     case 5:
-      printf("got %ld\n",tid);
-      searchy(&grid[nQRow],nQRow,nQCol,0);
+      // printf("got %ld\n",tid);
+      searchy(grid,nQRow,nQCol,0,nQRow);
       break;
     case 6:
-      printf("got %ld\n",tid);
-      searchy(grid,nQRow,nQCol,nQCol);
+      // printf("got %ld\n",tid);
+      searchy(grid,nQRow,nQCol,nQCol,0);
       break;
     case 7:
-      printf("got %ld\n",tid);
-      searchy(&grid[nQRow],nQRow,nQCol,nQCol);
+      //printf("got %ld\n",tid);
+      searchy(grid,nQRow,nQCol,nQCol,nQRow);
       break;
   
     }
