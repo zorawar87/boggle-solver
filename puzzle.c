@@ -1,5 +1,5 @@
 /* puzzle.c
- * 
+ * searches for a word
  *
  *
  * authors James Rodiger, Zorawar 
@@ -37,9 +37,7 @@ void main(){
 
   start = time(NULL);
 
-
   search(grid,nRow,nCol,word);
-  //search for word
 
   end = time(NULL);
   free(word);
