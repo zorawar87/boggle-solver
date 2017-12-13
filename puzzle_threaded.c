@@ -1,7 +1,8 @@
 /* puzzle_threaded.c
  * threads: 8 
- * 
- *
+ * the grid is divided into four and two threads look through 
+ * each quadrant one starting with the first letter one with the last
+ * The multitasking version does preform better.
  * authors James Rodiger, Zorawar 
  * 
  */
