@@ -1,1 +1,1 @@
-# 275puzzle
+# Boggle Solver
